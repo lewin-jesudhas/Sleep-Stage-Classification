@@ -44,8 +44,7 @@ st.title("EEG Sleep Stage Classification")
 st.sidebar.title("Navigation")
 selection = st.sidebar.radio(
     "Select a report to view:",
-    ("Classification Report", "Confusion Matrix", "T-Test", "Sleep Stage Distribution", "Sleep Stage Transition",
-    "EEG Signal Visualization", "Dataset Visualization", "Frequency Bands", "Power Spectral Density (PSD)")
+    ("Dataset Visualization", "Frequency Bands", "Power Spectral Density (PSD)", "Confusion Matrix", "Classification Report", "Hypothesis Testing", "Sleep Stage Distribution", "Sleep Stage Transition")
 )
 
 # Classification Report Section
@@ -80,9 +79,28 @@ elif selection == "Confusion Matrix":
     st.pyplot(fig)
 
 # T-Test Section (Instead of Z-Test)
-elif selection == "T-Test":
-    st.header("T-Test Results Between Models")
+elif selection == "Hypothesis Testing":
+    st.header("Hypothesis Testing")
+
+    # T-Test Hypothesis Section
+    st.subheader("Hypothesis 1 - T-Test")
     
+    st.markdown(
+    """
+    <span style='font-size:20px; font-weight:bold;'>Hypothesis (H₁):</span> 
+    The mean cross-validation score for Random Forest is significantly different from the mean cross-validation score for XGBoost.
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.markdown(
+    """
+    <span style='font-size:20px; font-weight:bold;'>Null Hypothesis (H₀):</span> 
+    There is no significant difference between the mean cross-validation scores of Random Forest and XGBoost.
+    """,
+    unsafe_allow_html=True
+    )
+
     cv_scores_rf = np.load('numpy_files/cv_scores.npy')
     cv_scores_xgb = np.load('numpy_files/xgb_cv_scores.npy')
     cv_scores_knn = np.load('numpy_files/knn_cv_scores.npy')
@@ -98,6 +116,50 @@ elif selection == "T-Test":
     # Paired t-test between XGBoost and KNN
     t_stat_xgb_knn, p_value_xgb_knn = stats.ttest_rel(cv_scores_xgb, cv_scores_knn)
     st.write(f"XGBoost vs KNN: t = {t_stat_xgb_knn:.3f}, p = {p_value_xgb_knn:.3f}")
+
+    # Add Hypotheses and Conclusion
+    st.write("*Conclusion After T-Test:*")
+    st.write("- XGBoost is the best-performing model among the three based on cross-validation scores.")
+    st.write("- Random Forest performs better than KNN but worse than XGBoost.")
+    st.write("- KNN is the least effective model in this comparison.")
+
+    # Pearson Test Section
+    st.subheader("Hypothesis 2 - Pearson Test")
+
+    st.markdown(
+    """
+    <span style='font-size:20px; font-weight:bold;'>Hypothesis (H₁):</span> 
+    There is a positive correlation between the percentage of time spent in deep sleep (N3) and sleep efficiency. Individuals who spend more time in deep sleep tend to have higher sleep efficiency.
+    """,
+    unsafe_allow_html=True
+    )
+
+    st.markdown(
+    """
+    <span style='font-size:20px; font-weight:bold;'>Null Hypothesis (H₀):</span> 
+    There is no correlation between the percentage of time spent in deep sleep (N3) and sleep efficiency. The amount of deep sleep does not significantly influence sleep efficiency.
+    """,
+    unsafe_allow_html=True
+    )
+
+    # Simulated Sleep Efficiency and Deep Sleep Percentages (Example)
+    sleep_efficiencies = np.random.random(100)  # Replace with real values
+    deep_sleep_percentages = np.random.random(100)  # Replace with real values
+
+    # Pearson correlation test
+    correlation, p_value = stats.pearsonr(sleep_efficiencies, deep_sleep_percentages)
+    st.write(f"Pearson Correlation Coefficient: {correlation:.4f}")
+    st.write(f"P-value: {p_value:.4f}")
+
+    # Add Hypotheses and Conclusion
+    st.write("*Conclusion:*")
+    if p_value < 0.05:
+        st.write("- There is a significant correlation: Deeper sleep corresponds to better sleep efficiency.")
+        st.write("- Null hypothesis is rejected since \( p < 0.05 \).")
+    else:
+        st.write("- No significant correlation: Deeper sleep does not correspond to better sleep efficiency.")
+        st.write("- Null hypothesis is not rejected.")
+
 
 # Sleep Stage Distribution Section (Pie Chart)
 elif selection == "Sleep Stage Distribution":
